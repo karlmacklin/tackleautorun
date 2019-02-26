@@ -1,9 +1,9 @@
 {
     "name": "tackleautorun",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "title": "Tackle's Autorun",
     "author": "TackleMcClean",
     "homepage": "https://github.com/karlmacklin/tackleautorun",
-    "factorio_version": "0.16",
-    "dependencies": ["base >= 0.16"]
+    "factorio_version": "0.17",
+    "dependencies": ["base >= 0.17"]
 }
