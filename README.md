@@ -1,6 +1,6 @@
 # Tackle's Autorun
 
-A mod for Factorio v0.18
+A mod for Factorio v1.0
 
 ## Download
 
