@@ -1,7 +1,7 @@
 script.on_init(
 	function()
-		global.latched_players = {}
-		global.queued_inputs = {}
+		storage.latched_players = {}
+		storage.queued_inputs = {}
 	end
 )
 
@@ -13,86 +13,136 @@ local input_directions = {
 }
 
 local function on_tick()
-	local latched_players = global.latched_players
-	for player_index, input_queue in pairs(global.queued_inputs) do
+	local latched_players = storage.latched_players
+	for player_index, input_queue in pairs(storage.queued_inputs) do
+		local player = game.get_player(player_index)
+		if player.controller_type ~= defines.controllers.character then
+			break
+		end
 		local explicit = settings.get_player_settings(player_index)["tackleautorun-explicitcancel"].value
+
 		-- Toggle key
 		if input_queue["autorun"] then
-			local player = game.get_player(player_index)
 			-- Disable
 			if latched_players[player_index] or not player then
 				latched_players[player_index] = nil
 			else
 				latched_players[player_index] = {
 					walking = true,
-					direction = player.walking_state.direction
+					direction = player.character.walking_state.direction
 				}
 			end
 		elseif not explicit then -- If we don't use "explicit" this case is always a cancel
 			latched_players[player_index] = nil
 		elseif latched_players[player_index] then -- User has explicit enabled, is already autorunning, and pressed a key
-			local player = game.get_player(player_index)
-			local avg_direction, input_count = latched_players[player_index].direction, 1
+			local avg_direction = latched_players[player_index].direction
+			local new_direction = nil
 			for input_name in pairs(input_queue) do
 				local direction_pressed = input_directions[input_name]
 				if not direction_pressed then -- Cancel
-					input_count = 0
 					latched_players[player_index] = nil
 					break
 				else
 					if avg_direction ~= direction_pressed then
-						-- "up" should count as 8 when compared to anything >=4
-						if direction_pressed > 3 and avg_direction == 0 then
-							avg_direction = 8
+
+						-- going right
+						if direction_pressed == 4 and (avg_direction == 0) then
+							new_direction = 2
 						end
-						if avg_direction > 3 and direction_pressed == 0 then
-							direction_pressed = 8
+
+						if direction_pressed == 4 and (avg_direction == 2 or avg_direction == 4 or avg_direction == 6) then
+							new_direction = 4
 						end
-						-- If we press a direction more than 90 degrees from our heading, just abort
-						if math.abs(avg_direction - direction_pressed) >= 3 then
-							input_count = 0
+
+						if direction_pressed == 4 and (avg_direction == 8) then
+							new_direction = 6
+						end
+
+						-- going down
+						if direction_pressed == 8 and (avg_direction == 4) then
+							new_direction = 6
+						end
+
+						if direction_pressed == 8 and (avg_direction == 6 or avg_direction == 8 or avg_direction == 10) then
+							new_direction = 8
+						end
+
+						if direction_pressed == 8 and (avg_direction == 12) then
+							new_direction = 10
+						end
+
+						-- going left
+						if direction_pressed == 12 and (avg_direction == 8) then
+							new_direction = 10
+						end
+
+						if direction_pressed == 12 and (avg_direction == 10 or avg_direction == 12 or avg_direction == 14) then
+							new_direction = 12
+						end
+
+						if direction_pressed == 12 and (avg_direction == 0) then
+							new_direction = 14
+						end
+
+						-- going up
+						if direction_pressed == 0 and (avg_direction == 12) then
+							new_direction = 14
+						end
+
+						if direction_pressed == 0 and (avg_direction == 14 or avg_direction == 0 or avg_direction == 2) then
+							new_direction = 0
+						end
+
+						if direction_pressed == 0 and (avg_direction == 4) then
+							new_direction = 2
+						end
+
+						--
+
+						if new_direction == nil then
 							latched_players[player_index] = nil
 							break
-						elseif math.abs(avg_direction - direction_pressed) <= 1 then -- Quarter turns need no division
-							avg_direction = direction_pressed
-						else
-							input_count = input_count + 1
-							avg_direction = avg_direction + direction_pressed
 						end
+
 					end
 				end
 			end
-			if input_count > 0 then
+			if new_direction ~= nil then
 				latched_players[player_index] = {
 					walking = true,
-					direction = math.max((avg_direction / input_count) % 8)
+					direction = new_direction
 				}
 			end
 		end
 	end
 	for player_index, player_state in pairs(latched_players) do
 		local player = game.get_player(player_index)
-		-- No player, deleted or otherwise gone
+		local character = player.character
 		if not player then
 			latched_players[player_index] = nil
 		else
-			player.walking_state = player_state
+			character.walking_state = player_state
 		end
 	end
 	-- Clear queue for next tick
-	global.queued_inputs = {}
+	storage.queued_inputs = {}
 end
 
 local function queue_input(event)
-	if not global.queued_inputs[event.player_index] then
-		global.queued_inputs[event.player_index] = {}
+	local player = game.get_player(event.player_index)
+	if not storage.queued_inputs[event.player_index] then
+		storage.queued_inputs[event.player_index] = {}
 	end
-	global.queued_inputs[event.player_index][event.input_name] = true
+	storage.queued_inputs[event.player_index][event.input_name] = true
 end
 
 
 local function latch_off(event)
-	global.latched_players[event.player_index] = nil
+	local player = game.get_player(event.player_index)
+	local walking_state = player.character.walking_state
+	walking_state.walking = false
+	player.character.walking_state = walking_state
+	storage.latched_players[event.player_index] = nil
 end
 
 script.on_event("move-up", queue_input)

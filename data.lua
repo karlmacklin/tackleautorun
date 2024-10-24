@@ -3,13 +3,13 @@ data:extend({
     type = "custom-input",
     name = "autorun",
     key_sequence = "mouse-button-5",
-    consuming = "none"
+    consuming = "game-only"
   },
 	{
     type = "custom-input",
     name = "stop_autorun",
     key_sequence = "mouse-button-4",
-    consuming = "none"
+    consuming = "game-only"
   },
 	{
     type = "custom-input",

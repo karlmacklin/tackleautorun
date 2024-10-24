@@ -1,6 +1,6 @@
 # Tackle's Autorun
 
-A mod for Factorio v1.0
+A mod for Factorio v2.0
 
 ## Download
 
@@ -19,4 +19,6 @@ You might want to rebind the buttons to something that suits you better. Also no
 If you have any issues please raise them on github.
 
 - NOTE: This does not work well in multiplayer, as the global state for this mod is affecting player movement direction instead of you pressing keys. It technically works in multiplayer, but the latency induces weird choppy movement so it's not a smooth experience.
-- NOTE: After 0.17 update Factorio has default binds to both buttons mouse 4 and 5. This mod collides on that bind, so either figure out something suitable for yourself or do what I did - unbind the default game binds on those buttons.
+- NOTE: After 0.17 update Factorio has default binds to both buttons mouse 4 and 5. This mod collides on that bind, so either figure out something suitable for yourself or do what I did - unbind the default game binds on those buttons. This mod consumes the input for any binds that collide, so rebind either this mods keys if you want to keep default binds, or change the defaults.
+- NOTE: For the 2.0 update it now works fine to keep running with the map open.
+- NOTE: Also for 2.0 the explicit cancelling toggle defaults to true instead of false.
